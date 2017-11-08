@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.canvas.*?>
+<?import javafx.scene.shape.*?>
+<?import javafx.scene.control.*?>
+<?import java.lang.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+
+<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="800.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="sample.Controller">
+   <top>
+      <ToolBar prefHeight="40.0" prefWidth="200.0" BorderPane.alignment="CENTER">
+        <items>
+            <Button mnemonicParsing="false" onAction="#pickPics" text="选择图片" />
+            <Button fx:id="parseBtn" mnemonicParsing="false" onAction="#parsePic" text="识别" />
+            <ColorPicker fx:id="colorPicker" onHidden="#colorPicked" />
+            <Label fx:id="resultLabel" prefHeight="19.0" prefWidth="137.0" text="识别结果" />
+            <CheckBox fx:id="isColorPickOpen" mnemonicParsing="false" text="颜色拾取" />
+        </items>
+      </ToolBar>
+   </top>
+   <center>
+      <ScrollPane prefViewportHeight="400.0" prefViewportWidth="461.0" BorderPane.alignment="CENTER">
+         <content>
+            <Canvas fx:id="picCanvas" height="500.0" layoutX="77.0" layoutY="81.0" onMouseClicked="#pickColor" onMouseEntered="#inPickColorMode" onMouseExited="#outPickColorMode" width="783.0" AnchorPane.bottomAnchor="117.0" AnchorPane.leftAnchor="77.0" AnchorPane.rightAnchor="77.0" AnchorPane.topAnchor="81.0" />
+         </content>
+      </ScrollPane>
+   </center>
+   <bottom>
+      <ToolBar prefHeight="40.0" prefWidth="200.0" BorderPane.alignment="CENTER">
+         <items>
+            <Label text="误差值设置  R" />
+            <Slider fx:id="colorRSlider" max="255.0" />
+            <Label text="G" />
+            <Slider fx:id="colorGSlider" max="255.0" />
+            <Label text="B" />
+            <Slider fx:id="colorBSlider" max="255.0" />
+            <Label text="H" />
+            <Slider fx:id="colorBSlider1" max="255.0" />
+            <Label text="S" />
+            <Slider fx:id="colorGSlider1" max="255.0" />
+            <Label text="L" />
+            <Slider fx:id="colorRSlider1" max="255.0" />
+         </items>
+      </ToolBar>
+   </bottom>
+</BorderPane>
