@@ -15,10 +15,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.ThreadPoolExecutor.DiscardOldestPolicy;
+import java.util.concurrent.TimeUnit;
 
 import javax.imageio.ImageIO;
 
@@ -151,20 +154,27 @@ public class Controller {
         clusterPixelRadius.valueProperty().addListener(sliderChangeListener);
     }
 
-    private ExecutorService executor = Executors.newSingleThreadExecutor(new ThreadFactory() {
+    private ExecutorService executor = new ThreadPoolExecutor(1, 1,
+        0L, TimeUnit.MILLISECONDS,
+        new ArrayBlockingQueue<Runnable>(1), new ThreadFactory() {
         @Override
         public Thread newThread(Runnable r) {
             Thread t = new Thread(r, "backgroundThread");
             t.setDaemon(true);
             return t;
         }
-    });
+    }, new DiscardOldestPolicy());
 
     public void parsePic(ActionEvent actionEvent) {
         Callable<Object> callable = new Callable<Object>() {
             @Override
             public Object call() throws Exception {
                 if (image != null) {
+                    try {
+                        Thread.sleep(200);
+                    } catch (InterruptedException e) {
+                        return null;
+                    }
                     double scaleX = image.getWidth() / picCanvas.getWidth();
                     double scaleY = image.getHeight() / picCanvas.getHeight();
                     Platform.runLater(new Runnable() {
@@ -404,7 +414,9 @@ public class Controller {
     private void setBusy(boolean isBusy) {
         if (isBusy) {
             resultLabel.setText("处理中...");
-            prevCursor = picCanvas.getScene().getCursor();
+            if (!Cursor.WAIT.equals(picCanvas.getScene().getCursor())) {
+                prevCursor = picCanvas.getScene().getCursor();
+            }
             picCanvas.getScene().setCursor(Cursor.WAIT);
         } else if (prevCursor != null && !prevCursor.equals(picCanvas.getScene().getCursor())
             && Cursor.WAIT.equals(picCanvas.getScene().getCursor())) {
