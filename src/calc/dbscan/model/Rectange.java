@@ -1,4 +1,4 @@
-package calc.alg.model;
+package calc.dbscan.model;
 
 /**
  * 表示一个矩形

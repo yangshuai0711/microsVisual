@@ -1,4 +1,4 @@
-package calc.alg.model;
+package calc.dbscan.model;
 
 /**
  * Created by yuana on 2015/9/21.

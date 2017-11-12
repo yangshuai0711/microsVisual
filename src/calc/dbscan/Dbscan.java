@@ -1,4 +1,4 @@
-package calc.alg;
+package calc.dbscan;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -9,9 +9,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 
-import calc.alg.model.Cluster;
-import calc.alg.model.Point;
-import calc.alg.model.Rectange;
+import calc.dbscan.model.Cluster;
+import calc.dbscan.model.Point;
+import calc.dbscan.model.Rectange;
 
 /**
  * Created by yuana on 2015/9/21.

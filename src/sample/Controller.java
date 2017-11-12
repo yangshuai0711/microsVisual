@@ -22,9 +22,9 @@ import java.util.concurrent.ThreadFactory;
 
 import javax.imageio.ImageIO;
 
-import calc.alg.Dbscan;
-import calc.alg.model.Cluster;
-import calc.alg.model.Point;
+import calc.dbscan.Dbscan;
+import calc.dbscan.model.Cluster;
+import calc.dbscan.model.Point;
 import com.asprise.util.tiff.MyTIFFReader;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
@@ -40,6 +40,7 @@ import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ColorPicker;
 import javafx.scene.control.Label;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Slider;
 import javafx.scene.image.Image;
 import javafx.scene.image.PixelReader;
@@ -77,6 +78,8 @@ public class Controller {
     private Slider clusterPixelRadius;
     @FXML
     private CheckBox isColorPickOpen;
+    @FXML
+    private ScrollPane canvasPane;
 
     private Image image;
     private String defaultPicPath = null;
@@ -122,10 +125,10 @@ public class Controller {
                 return;
             }
         }
-        picCanvas.setWidth(image.getWidth());
-        picCanvas.setHeight(image.getHeight());
+        picCanvas.setWidth(canvasPane.getViewportBounds().getWidth());
+        picCanvas.setHeight(canvasPane.getViewportBounds().getHeight());
         GraphicsContext g = picCanvas.getGraphicsContext2D();
-        g.drawImage(image, 0, 0, image.getWidth(), image.getHeight());
+        g.drawImage(image, 0, 0, picCanvas.getWidth(), picCanvas.getHeight());
         colorPicker.getCustomColors().addListener(new ListChangeListener<Color>() {
             @Override
             public void onChanged(Change<? extends Color> c) {
@@ -162,19 +165,27 @@ public class Controller {
             @Override
             public Object call() throws Exception {
                 if (image != null) {
-                    //Dbscan dbscan = new Dbscan(25, 8);
+                    double scaleX = image.getWidth() / picCanvas.getWidth();
+                    double scaleY = image.getHeight() / picCanvas.getHeight();
+                    Platform.runLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            setBusy(true);
+                        }
+                    });
+                    long start = System.currentTimeMillis();
                     Dbscan dbscan = new Dbscan((int)clusterPixelCount.getValue(), (int)clusterPixelRadius.getValue());
                     PixelReader reader = image.getPixelReader();
-                    for (int i = 0; i < image.getWidth(); i++) {
-                        for (int i1 = 0; i1 < image.getHeight(); i1++) {
-                            int rgb = reader.getArgb(i, i1);
+                    for (int i = 0; i < picCanvas.getWidth(); i++) {
+                        for (int i1 = 0; i1 < picCanvas.getHeight(); i1++) {
+                            int rgb = reader.getArgb((int)(i * scaleX), (int)(i1 * scaleY));
                             if ((rgb & 0xFF) > 200 && ((rgb >> 8) & 0xFF) > 200 && ((rgb >> 16) & 0xFF) > 200) {
                                 continue;
                             }
                             if ((rgb & 0xFF) < 10 && ((rgb >> 8) & 0xFF) < 10 && ((rgb >> 16) & 0xFF) < 10) {
                                 continue;
                             }
-                            if (match(reader.getColor(i, i1))) {
+                            if (match(reader.getColor((int)(i * scaleX), (int)(i1 * scaleY)))) {
                                 dbscan.addData(i, i1);
                             }
                         }
@@ -197,9 +208,16 @@ public class Controller {
                     Platform.runLater(new Runnable() {
                         @Override
                         public void run() {
+                            setBusy(false);
+                        }
+                    });
+                    Platform.runLater(new Runnable() {
+                        @Override
+                        public void run() {
                             GraphicsContext g = picCanvas.getGraphicsContext2D();
                             g.clearRect(0, 0, picCanvas.getWidth(), picCanvas.getHeight());
-                            g.drawImage(image, 0, 0, image.getWidth(), image.getHeight());
+                            g.drawImage(image, 0, 0, canvasPane.getViewportBounds().getWidth(),
+                                canvasPane.getViewportBounds().getHeight());
                             g.setStroke(Color.YELLOW);
                             resultLabel.setText("共" + clusterList.size() + "个");
                             for (double[] circle : circles) {
@@ -235,7 +253,6 @@ public class Controller {
         return false;
     }
 
-
     public void inPickColorMode(MouseEvent mouseEvent) {
         if (isColorPickOpen.isSelected()) {
             picCanvas.getScene().setCursor(Cursor.CROSSHAIR);
@@ -250,7 +267,10 @@ public class Controller {
 
     public void pickColor(MouseEvent mouseEvent) {
         if (image != null && isColorPickOpen.isSelected()) {
-            Color color = image.getPixelReader().getColor((int)mouseEvent.getX(), (int)mouseEvent.getY());
+            double scaleX = image.getWidth() / picCanvas.getWidth();
+            double scaleY = image.getHeight() / picCanvas.getHeight();
+            Color color = image.getPixelReader().getColor((int)(mouseEvent.getX() * scaleX),
+                (int)(mouseEvent.getY() * scaleY));
             colorPicker.setValue(color);
             colorPicker.getCustomColors().add(color);
         }
@@ -376,6 +396,19 @@ public class Controller {
             Alert alert = new Alert(AlertType.ERROR);
             alert.setContentText(e.getMessage());
             alert.show();
+        }
+    }
+
+    private Cursor prevCursor = null;
+
+    private void setBusy(boolean isBusy) {
+        if (isBusy) {
+            resultLabel.setText("处理中...");
+            prevCursor = picCanvas.getScene().getCursor();
+            picCanvas.getScene().setCursor(Cursor.WAIT);
+        } else if (prevCursor != null && !prevCursor.equals(picCanvas.getScene().getCursor())
+            && Cursor.WAIT.equals(picCanvas.getScene().getCursor())) {
+            picCanvas.getScene().setCursor(prevCursor);
         }
     }
 }

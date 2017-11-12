@@ -1,4 +1,4 @@
-package calc.alg.model;
+package calc.dbscan.model;
 
 import java.util.LinkedList;
 import java.util.List;

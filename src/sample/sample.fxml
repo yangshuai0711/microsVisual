@@ -25,7 +25,7 @@
         </ToolBar>
     </top>
     <center>
-        <ScrollPane prefHeight="557.0" prefViewportHeight="400.0" prefViewportWidth="461.0" prefWidth="520.0" BorderPane.alignment="CENTER">
+        <ScrollPane fx:id="canvasPane" prefHeight="557.0" prefViewportHeight="400.0" prefViewportWidth="461.0" prefWidth="520.0" BorderPane.alignment="CENTER">
             <content>
                 <Canvas fx:id="picCanvas" height="372.0" layoutX="77.0" layoutY="81.0" onMouseClicked="#pickColor" onMouseEntered="#inPickColorMode" onMouseExited="#outPickColorMode" width="388.0" AnchorPane.bottomAnchor="117.0" AnchorPane.leftAnchor="77.0" AnchorPane.rightAnchor="77.0" AnchorPane.topAnchor="81.0" />
             </content>
